@@ -1,6 +1,8 @@
-from kbasic.Tex import Tex
-from kbasic.array import bin_this, nan_clip, where_between, where_closest
-from kbasic.bar import progress_bar, verbose_bar
-from kbasic.user_input import yesno
-from kbasic.vectors import *
 from kbasic.audio import *
+from kbasic.array import *
+from kbasic.bar import *
+from kbasic.shell import *
+from kbasic.user_input import *
+from kbasic.Tex import *
+from kbasic.typing import *
+from kbasic.vectors import *

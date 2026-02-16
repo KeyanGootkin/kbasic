@@ -2,7 +2,7 @@ from subprocess import check_output, DEVNULL
 import numpy as np
 from kbasic.bar import ProgressBar, redirect_to_tqdm
 from kbasic.audio import success
-from pysim.dhybridr.io import dHybridRinput
+from kgsim.dhybridr.io import dHybridRinput
 from tqdm import tqdm
 from time import sleep
 
