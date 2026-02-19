@@ -14,6 +14,9 @@ from scipy.interpolate import RegularGridInterpolator
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def tile(arr: np.ndarray) -> np.ndarray:
+    """take an image and create a 3x3 grid of that image"""
+    return np.r_[np.c_[arr, arr, arr], np.c_[arr, arr, arr], np.c_[arr, arr, arr]]
 def where_closest(arr:ndarray, x): return int(argmin(abs(arr-x)))
 def where_between(arr:ndarray, low, high): return where((arr>=low)&(arr<=high))
 def bin_this(
