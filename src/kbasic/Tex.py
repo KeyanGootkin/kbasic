@@ -1,6 +1,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from fractions import Fraction
 import warnings 
 # Syntax warnings show up everytime you \something so we ignore all of em, hope this doesn't fuck anything up!
 warnings.filterwarnings(action='ignore', category=SyntaxWarning)
@@ -17,6 +18,9 @@ l2t = LatexNodes2Text().latex_to_text
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def texfraction(num) -> str: 
+    f = Fraction(str(num))
+    return r"$\frac{" + str(f.numerator) + "}{" + str(f.denominator) + r"}$"
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Decorators                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

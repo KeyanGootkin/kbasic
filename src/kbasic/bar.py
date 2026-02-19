@@ -1,6 +1,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from kbasic.typing import Number
 from contextlib import contextmanager
 import inspect
 from tqdm import tqdm
@@ -14,13 +15,31 @@ from tqdm import tqdm
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def bar(x, total, width: int = 20, border="|", block="▉"):
+def bar(
+        x: Number, total: Number, 
+        width: int = 20, border="|", block="▉"
+) -> str:
+    """create a string representing a progress bar set at 100 * x / total % full.
+
+    Args:
+        x (Number): x out of total
+        total (_type_): x out of total
+        width (int, optional): how many characters wide the bar should be. Defaults to 20.
+        border (str, optional): the character to represent the border of the bar. Defaults to "|".
+        block (str, optional): the character representing a full part of the bar. Defaults to "▉".
+
+    Returns:
+        str: a progress bar
+    """
     full = int((x/total) * width // 1)
     empty = width - full
     bar = border + full*block + empty*" " + border 
     return bar
 @contextmanager
 def redirect_to_tqdm():
+    """maybe make print statements show up below the bar without fucking everything up?
+    idk tbh im not sure how this works exactly I got it from stack exchange.
+    """
     # Store builtin print
     old_print = print
     def new_print(*args, **kwargs):
@@ -37,10 +56,14 @@ def redirect_to_tqdm():
     finally:
         inspect.builtins.print = old_print
 def progress_bar(iterator, **kwargs):
+    """tqdm with print redirected to tqdm.write
+    """
     with redirect_to_tqdm():
         for x in tqdm(iterator, **kwargs):
             yield x
 def verbose_bar(iterator, verbose, **kwargs):
+    """just a progress bar if verbose is true.
+    """
     return progress_bar(iterator, **kwargs) if verbose else iterator
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

@@ -3,7 +3,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.bar import ProgressBar, redirect_to_tqdm
 from kbasic.audio import success
-from kgsim.dhybridr.io import dHybridRinput
+# from kgsim.dhybridr.io import dHybridRinput
 from subprocess import check_output, DEVNULL
 from tqdm import tqdm
 from time import sleep
@@ -77,17 +77,17 @@ class AnvilJob:
 
     def __repr__(self): return "-"*30 + f"\n{self.name}: {self.status}\n\t{self.time}/{self.time_limit}"
 
-    def update(self, input=True, iter=True):
-        match input, iter:
-            case True, True:
-                x = anvil(f"cat /anvil/scratch/{self.username}/sims/{self.name}/input/input; echo {self.sep}; ls /anvil/scratch/{self.username}/sims/{self.name}/Output/Fields/Magnetic/Total/x/")
-                input_lines = "\n".join(x).split(self.sep)[0].split('\n')
-                self.input = dHybridRinput(input_lines)
-                self.iter = int(x[-1][5:-3])
-            case True, False:
-                self.input = dHybridRinput(anvil(f"cat /anvil/scratch/{self.username}/sims/{self.name}/input/input"))
-            case False, True:
-                self.iter = int(anvil(f"ls /anvil/scratch/{self.username}/sims/{self.name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
+    # def update(self, input=True, iter=True):
+    #     match input, iter:
+    #         case True, True:
+    #             x = anvil(f"cat /anvil/scratch/{self.username}/sims/{self.name}/input/input; echo {self.sep}; ls /anvil/scratch/{self.username}/sims/{self.name}/Output/Fields/Magnetic/Total/x/")
+    #             input_lines = "\n".join(x).split(self.sep)[0].split('\n')
+    #             self.input = dHybridRinput(input_lines)
+    #             self.iter = int(x[-1][5:-3])
+    #         case True, False:
+    #             self.input = dHybridRinput(anvil(f"cat /anvil/scratch/{self.username}/sims/{self.name}/input/input"))
+    #         case False, True:
+    #             self.iter = int(anvil(f"ls /anvil/scratch/{self.username}/sims/{self.name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
 def get_anvil_jobs(username=_USERNAME_):
     q = anvil(f"squeue -u {username}")
     if type(q)==str: return []

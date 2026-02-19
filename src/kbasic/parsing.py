@@ -19,7 +19,12 @@ unreadable_file_types = ['gz', 'tar', 'zip']
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def ensure_path(path):
+def ensure_path(path: str) -> None:
+    """make sure that a path exists
+
+    Args:
+        path (str): the path you want to exist
+    """
     parts = path.strip().split('/')
     for i in range(len(parts)):
         if "/".join(parts[:i]) in "/home/x-kgootkin/": continue
@@ -123,7 +128,7 @@ class Folder:
     def ls(self) -> None: print("\n".join(self.children))
     def make(self) -> None: ensure_path(self.path)
     def copy(self, destination:str) -> None: copytree(self.path, destination)
-    def update(self) -> None:
+    def revert(self) -> None:
         assert self.master, "No master copy to update from."
         if self.exists: self.delete(interactive=False)
         self.master.copy(self.path)
@@ -133,15 +138,22 @@ class Folder:
             return None
         rmtree(self.path)
 
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                          Functions pt.2                         <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def parse(path: str|list) -> Folder|File:
+def parse(path: str | list[str]) -> Folder | File:
+    """take a path or list of paths and turn them into Folder or File objects as appropriate.
+
+    Args:
+        path (str | list[str]): the path you want to be a File/Folder object
+
+    Raises:
+        FileNotFoundError: if you can't match path
+
+    Returns:
+        Folder | File: path as a Folder/File.
+    """
     match path:
         case str():
             if isdir(path): return Folder(path)
             if isfile(path): return File(path)
-            if len(glob(path))>0: return [Folder(p) if isdir(p) else File(p) for p in glob(path)]
         case list()|np.ndarray():
             return [Folder(p) if isdir(p) else File(p) if isfile(p) else None for p in path]
     raise FileNotFoundError(f"Unable to parse path(s): {path}")

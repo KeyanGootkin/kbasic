@@ -1,3 +1,10 @@
+"""
+    I don't like type checking in python, so the way i decided to do it is if i want
+    to see if something looks like a number (int, float, complex or numpy variants)
+    i would say ->
+    if type(x) in Number.types: do_something()
+    elif type(x) in Iterable.types: do_something_else()
+"""
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
