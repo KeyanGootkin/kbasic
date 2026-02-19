@@ -5,10 +5,10 @@ from numpy import array, cos, sin, sqrt, exp
 from typing import Self
 from collections.abc import Generator
 from kbasic.typing import Number, Iterable
+
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -28,6 +28,7 @@ def organize_components(components) -> tuple[float|int]:
         case (Generator(),): return tuple(components[0])
         case (Vector(),): return components[0].components
         case _: raise TypeError(f"{components} cannot be matched")
+
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -90,7 +91,6 @@ class Vector:
         match other:
             case 0: return self
             case _: return self.__floordiv__(other)
-
 class Norm(Vector):
     def __init__(self, *components):
         components: tuple = organize_components(components)
@@ -103,7 +103,6 @@ class Quaternion(Norm):
         self.axis = sin(angle/2)*Vector(axis)
         self.axis *= sqrt(1-q0**2)/abs(self.axis)
         Norm.__init__(self, q0, *self.axis.components)
-        
 class R2(Vector):
     def __init__(self, *components):
         self.components: tuple[Number] = organize_components(components)
@@ -134,7 +133,6 @@ class R3(Vector):
         rotation_inverse = array([rotation[0], *-rotation[1:]])
         rotated_vector = hamilton_product(hamilton_product(rotation, qs), rotation_inverse)[1:]
         self.__init__(*rotated_vector)
-
 class Matrix:
     def __init__(self, array):
         self.array = array 

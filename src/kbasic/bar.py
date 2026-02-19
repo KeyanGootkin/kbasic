@@ -1,13 +1,24 @@
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Imports                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from contextlib import contextmanager
 import inspect
 from tqdm import tqdm
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                              Types                              <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                           Definitions                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def bar(x, total, width: int = 20, border="|", block="▉"):
     full = int((x/total) * width // 1)
     empty = width - full
     bar = border + full*block + empty*" " + border 
     return bar
-
 @contextmanager
 def redirect_to_tqdm():
     # Store builtin print
@@ -25,15 +36,19 @@ def redirect_to_tqdm():
         yield
     finally:
         inspect.builtins.print = old_print
-
 def progress_bar(iterator, **kwargs):
     with redirect_to_tqdm():
         for x in tqdm(iterator, **kwargs):
             yield x
-
 def verbose_bar(iterator, verbose, **kwargs):
     return progress_bar(iterator, **kwargs) if verbose else iterator
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Decorators                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Classes                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class ProgressBar(tqdm):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)

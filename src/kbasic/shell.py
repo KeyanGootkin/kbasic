@@ -1,17 +1,27 @@
-from subprocess import check_output, DEVNULL
-import numpy as np
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Imports                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.bar import ProgressBar, redirect_to_tqdm
 from kbasic.audio import success
 from kgsim.dhybridr.io import dHybridRinput
+from subprocess import check_output, DEVNULL
 from tqdm import tqdm
 from time import sleep
-
 import asyncio
+import numpy as np
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                              Types                              <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                           Definitions                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 _USERNAME_ = 'x-kgootkin'
-
 bad = ['\x1b[31m', '\x1b[34m', '\x1b[m']
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def parse_shell_output(output):
         match output:
             case str(): return output 
@@ -22,7 +32,6 @@ def parse_shell_output(output):
                         if b in output[i]:
                             output[i] = output[i].strip(b)
                 return output
-
 def system(cmd: str):
     print(cmd)
     command = cmd.split(' ') if type(cmd)==str else cmd
@@ -37,17 +46,19 @@ def system(cmd: str):
             for j in range(start_quote+1, end_quote+1): del command[j]
     output = parse_shell_output(check_output(command, stderr=DEVNULL).decode().splitlines())
     return output
-
 def anvil(cmd: str):
     output = parse_shell_output(check_output(['ssh', 'x-kgootkin@anvil.rcac.purdue.edu', *cmd.split(' ')], stderr=DEVNULL).decode().splitlines())
     return output
-
 async def anvil_async(cmd: str): asyncio.to_thread(anvil, cmd)
-
-
 def anvil_queue(username=_USERNAME_): return anvil(f"squeue -u {username}")
-qs = anvil_queue 
+qs = anvil_queue
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Decorators                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Classes                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!== 
 class AnvilJob:
     def __init__(self, queue_row: str, sep="DISTINCTSEPERATOR"):
         self.sep = sep
@@ -77,21 +88,17 @@ class AnvilJob:
                 self.input = dHybridRinput(anvil(f"cat /anvil/scratch/{self.username}/sims/{self.name}/input/input"))
             case False, True:
                 self.iter = int(anvil(f"ls /anvil/scratch/{self.username}/sims/{self.name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
-
 def get_anvil_jobs(username=_USERNAME_):
     q = anvil(f"squeue -u {username}")
     if type(q)==str: return []
     return [AnvilJob(x) for x in q[1:]]
-
 async def get_anvil_jobs_async(username=_USERNAME_):
     q = await asyncio.to_thread(anvil, f"squeue -u {username}")
     if type(q)==str: return []
     return [AnvilJob(x) for x in q[1:]]
-
 async def get_anvil_sim_iter(name: str):
     iter = int(await asyncio.to_thread(anvil, f"ls /anvil/scratch/{username}/sims/{name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
     return iter
-
 class AnvilQueue:
     def __init__(self, username=_USERNAME_):
         self.username = username
