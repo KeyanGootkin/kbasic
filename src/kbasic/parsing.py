@@ -31,6 +31,7 @@ def ensure_path(path: str) -> None:
         if pi in "/home/x-kgootkin/": continue
         if not exists(pi):
             mkdir(pi)
+def could_be_path(path: str) -> bool: return isdir('/'.join(path.split('/')[:2])) 
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<
