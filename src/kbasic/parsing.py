@@ -25,11 +25,12 @@ def ensure_path(path: str) -> None:
     Args:
         path (str): the path you want to exist
     """
-    parts = path.strip().split('/')
-    for i in range(len(parts)):
-        if "/".join(parts[:i]) in "/home/x-kgootkin/": continue
-        if not exists("/".join(parts[:i])):
-            mkdir("/".join(parts[:i]))
+    parts = abspath(path).strip().split('/')[1:]
+    for i in range(len(parts)+1):
+        pi = "/"+"/".join(parts[:i])
+        if pi in "/home/x-kgootkin/": continue
+        if not exists(pi):
+            mkdir(pi)
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<

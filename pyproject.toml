@@ -1,6 +1,6 @@
 [project]
 name = "kbasic"
-version = "0.1.7"
+version = "0.1.11"
 description = "Keyan's basic utility functions."
 readme = "README.md"
 requires-python = ">=3.11"
