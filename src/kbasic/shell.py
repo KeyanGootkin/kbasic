@@ -3,6 +3,8 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.bar import ProgressBar, redirect_to_tqdm
 from kbasic.audio import success
+from kbasic.environment import isAnvil 
+if isAnvil: from kbasic.environment.anvil import anvil_user
 # from kgsim.dhybridr.io import dHybridRinput
 from subprocess import check_output, DEVNULL
 from tqdm import tqdm
@@ -25,6 +27,7 @@ ansi = {"BLACK": u"\033[0;30m","RED": u"\x1b[0;31m","GREEN": u"\033[0;32m","BROW
     "NEGATIVE": u"\033[7m","BLACK BACKGROUND": u"\033[7;30m","RED BACKGROUND": u"\x1b[7;31m","GREEN BACKGROUND": u"\033[7;32m","BROWN BACKGROUND": u"\033[7;33m","BLUE BACKGROUND": u"\033[7;34m","PURPLE BACKGROUND": u"\033[7;35m","CYAN BACKGROUND": u"\033[7;36m","WHITE BACKGROUND": u"\033[7;37m",
     "END": u"\033[0m"
 }
+_USERNAME_ = None if not isAnvil else anvil_user
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
