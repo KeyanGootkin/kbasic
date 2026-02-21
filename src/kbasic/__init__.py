@@ -1,3 +1,4 @@
+from kbasic.environment import *
 from kbasic.audio import *
 from kbasic.array import *
 from kbasic.bar import *
