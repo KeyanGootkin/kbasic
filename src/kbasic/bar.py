@@ -2,6 +2,7 @@
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.typing import Number
+from kbasic.shell import color as color_text
 from contextlib import contextmanager
 import inspect
 from tqdm import tqdm
@@ -17,7 +18,7 @@ from tqdm import tqdm
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def bar(
         x: Number, total: Number, 
-        width: int = 20, border="|", block="▉"
+        width: int = 20, border="|", block="▉", color='white'
 ) -> str:
     """create a string representing a progress bar set at 100 * x / total % full.
 
@@ -33,7 +34,7 @@ def bar(
     """
     full = int((x/total) * width // 1)
     empty = width - full
-    bar = border + full*block + empty*" " + border 
+    bar = border + (full-1)*color_text(block, "green") + color_text(block, "yellow") + empty*color_text(block, "black", "faint") + border 
     return bar
 @contextmanager
 def redirect_to_tqdm():
