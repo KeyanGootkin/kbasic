@@ -2,7 +2,7 @@
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from typing import Callable
-from numpy import ndarray, argmin, abs, where, nanmean, nanmin, nanmax, linspace, nanstd, array, isnan, arange, mgrid
+from numpy import ndarray, argmin, any, abs, where, nanmean, nanmin, nanmax, linspace, nanstd, array, isnan, arange, mgrid
 from scipy.interpolate import RegularGridInterpolator
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

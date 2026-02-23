@@ -10,6 +10,7 @@ from shutil import copy, move, copytree, rmtree
 from os.path import isdir, isfile, exists, abspath
 from os import mkdir, remove
 from functools import cached_property
+import tomllib
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
@@ -94,7 +95,11 @@ class File:
         with open(self.path, 'w+') as file:
             if not file.writable: raise PermissionError(f"attempted to save unwritable file: {self.path}")
             file.writelines("\n".join(self.lines))
-
+class TOML(File):
+    def __init__(self, path: str, verbose: bool = False):
+        File.__init__(self, path, verbose=verbose)
+    def read(self):
+        self.__dict__ |= tomllib.load(open(self.path, 'rb'))
 class Folder:
     def __init__(self, path:str, master=None) -> None:
         self.path = '/' if path=='' else abspath(path.replace("\\", "/").replace('//', '/'))
@@ -131,7 +136,7 @@ class Folder:
     def make(self) -> None: ensure_path(self.path)
     def copy(self, destination:str) -> None: copytree(self.path, destination)
     def revert(self) -> None:
-        assert self.master, "No master copy to update from."
+        assert self.master is not None, "No master copy to update from."
         if self.exists: self.delete(interactive=False)
         self.master.copy(self.path)
         self = Folder(self.path, master=self.master)
@@ -155,7 +160,8 @@ def parse(path: str | list[str]) -> Folder | File:
     match path:
         case str():
             if isdir(path): return Folder(path)
-            if isfile(path): return File(path)
+            if isfile(path): 
+                return TOML(path) if path.split('.')[-1]=='toml' else File(path)
         case list()|np.ndarray():
             return [Folder(p) if isdir(p) else File(p) if isfile(p) else None for p in path]
     raise FileNotFoundError(f"Unable to parse path(s): {path}")
