@@ -2,7 +2,8 @@
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from typing import Callable
-from numpy import ndarray, argmin, any, abs, where, nanmean, nanmin, nanmax, linspace, nanstd, array, isnan, arange, mgrid
+from numpy import ndarray, argmin, any, abs, where, nanmean, nanmin, nanmax, sqrt,\
+                  linspace, nanstd, array, isnan, arange, mgrid, r_, c_, zeros
 from scipy.interpolate import RegularGridInterpolator
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -16,7 +17,7 @@ from scipy.interpolate import RegularGridInterpolator
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def tile(arr: ndarray) -> ndarray:
     """take an image and create a 3x3 grid of that image"""
-    return np.r_[np.c_[arr, arr, arr], np.c_[arr, arr, arr], np.c_[arr, arr, arr]]
+    return r_[c_[arr, arr, arr], c_[arr, arr, arr], c_[arr, arr, arr]]
 def where_closest(arr:ndarray, x): return int(argmin(abs(arr-x)))
 def where_between(arr:ndarray, low, high): return where((arr>=low)&(arr<=high))
 def bin_this(
@@ -72,7 +73,7 @@ def interpolate2d(
     assert periodic, "non-periodic version not implemented yet! make one but be careful because the shapes will be awkward"
     Nx, Ny = array(data).shape
     grid = (arange(Nx+1), arange(Ny+1))
-    data_repeat = np.zeros((Nx+1, Ny+1))
+    data_repeat = zeros((Nx+1, Ny+1))
     data_repeat[:Nx, :Ny] = data 
     data_repeat[-1,:-1] = data[0]
     data_repeat[:-1,-1] = data[:,0]
