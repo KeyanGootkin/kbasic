@@ -2,7 +2,7 @@
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.typing import Number
-from kbasic.shell import color as color_text
+from kbasic.strings import green, yellow, black
 from contextlib import contextmanager
 import inspect
 from tqdm import tqdm
@@ -34,7 +34,7 @@ def bar(
     """
     full = int((x/total) * width // 1)
     empty = width - full
-    bar = border + (full-1)*color_text(block, "green") + color_text(block, "yellow") + empty*color_text(block, "black", "faint") + border 
+    bar = border + (full-1)*green(block) + yellow(block) + empty*black(block, "faint") + border 
     return bar
 @contextmanager
 def redirect_to_tqdm():
