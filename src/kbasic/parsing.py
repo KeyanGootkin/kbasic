@@ -8,7 +8,7 @@ import numpy as np
 from glob import glob 
 from shutil import copy, move, copytree, rmtree
 from os.path import isdir, isfile, exists, abspath
-from os import mkdir, remove
+from os import system, remove
 from functools import cached_property
 import tomllib
 
@@ -26,12 +26,7 @@ def ensure_path(path: str) -> None:
     Args:
         path (str): the path you want to exist
     """
-    parts = abspath(path).strip().split('/')[1:]
-    for i in range(len(parts)+1):
-        pi = "/"+"/".join(parts[:i])
-        if pi in "/home/x-kgootkin/": continue
-        if not exists(pi):
-            mkdir(pi, )
+    system(f"mkdir -p {path}")
 def could_be_path(path: str) -> bool: return isdir('/'.join(path.split('/')[:2])) 
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -98,6 +93,7 @@ class File:
 class TOML(File):
     def __init__(self, path: str, verbose: bool = False):
         File.__init__(self, path, verbose=verbose)
+        if self.exists: self.read()
     def read(self):
         self.__dict__ |= tomllib.load(open(self.path, 'rb'))
 class Folder:
