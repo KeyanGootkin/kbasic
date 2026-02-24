@@ -31,7 +31,7 @@ def ensure_path(path: str) -> None:
         pi = "/"+"/".join(parts[:i])
         if pi in "/home/x-kgootkin/": continue
         if not exists(pi):
-            mkdir(pi)
+            mkdir(pi, )
 def could_be_path(path: str) -> bool: return isdir('/'.join(path.split('/')[:2])) 
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

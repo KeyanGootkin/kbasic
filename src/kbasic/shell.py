@@ -1,7 +1,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.bar import ProgressBar, redirect_to_tqdm
+from kbasic.bar import redirect_to_tqdm
 from kbasic.audio import success
 from kbasic.environment import isAnvil 
 if isAnvil: from kbasic.environment.anvil import anvil_user

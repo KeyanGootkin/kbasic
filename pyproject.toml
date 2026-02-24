@@ -1,8 +1,11 @@
 [project]
 name = "kbasic"
-version = "0.1.14"
+version = "0.1.15"
 description = "Keyan's basic utility functions."
 readme = "README.md"
+authors = [
+  { name="Keyan Gootkin", email="keyangootkin@gmail.com" },
+]
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.4.2",
