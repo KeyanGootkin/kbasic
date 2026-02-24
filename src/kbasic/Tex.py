@@ -28,7 +28,7 @@ def texfraction(num) -> str:
 # >-|===|>                             Classes                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class Tex(str):
-    def __init__(self, x):
+    def __init__(self, x: str) -> None:
         x = x.strip(' $')
         if x[-1]=='\n': x = x[:-1]
         if x[-2:]=='.0': x = x[:-2]
@@ -42,5 +42,5 @@ class Tex(str):
         self.string = fr"{l2t(x)}"
         self.wrap = "$"+self.string+"$"
 
-    def __repr__(self): return self.string.strip("$")
-    def __str__(self): return self.string
+    def __repr__(self) -> str: return self.string.strip("$")
+    def __str__(self) -> str: return self.string

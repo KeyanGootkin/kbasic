@@ -9,13 +9,12 @@ from glob import glob
 from shutil import copy, move, copytree, rmtree
 from os.path import isdir, isfile, exists, abspath
 from os import system, remove
-from functools import cached_property
 import tomllib
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-unreadable_file_types = ['gz', 'tar', 'zip']
+unreadable_file_types: list[str] = ['gz', 'tar', 'zip']
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
@@ -27,7 +26,16 @@ def ensure_path(path: str) -> None:
         path (str): the path you want to exist
     """
     system(f"mkdir -p {path}")
-def could_be_path(path: str) -> bool: return isdir('/'.join(path.split('/')[:2])) 
+def could_be_path(path: str) -> bool: 
+    """determine if this is anywhere close to a valid path
+
+    Args:
+        path (str): the path (?) to check
+
+    Returns:
+        bool: True if the first two members of the path are valid else False.
+    """
+    return isdir('/'.join(path.split('/')[:2])) 
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<
@@ -141,7 +149,7 @@ class Folder:
             return None
         rmtree(self.path)
 
-def parse(path: str | list[str]) -> Folder | File:
+def parse(path: str | list[str]) -> Folder | File | list[Folder | File]:
     """take a path or list of paths and turn them into Folder or File objects as appropriate.
 
     Args:
@@ -151,7 +159,7 @@ def parse(path: str | list[str]) -> Folder | File:
         FileNotFoundError: if you can't match path
 
     Returns:
-        Folder | File: path as a Folder/File.
+        Folder | File | list[Folder|File]: path(s) as a Folder/File.
     """
     match path:
         case str():

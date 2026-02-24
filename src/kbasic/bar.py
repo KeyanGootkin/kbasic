@@ -1,7 +1,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number
+from kbasic.typing import Number, Iterable
 from kbasic.strings import green, yellow, black
 from contextlib import contextmanager
 import inspect
@@ -18,7 +18,7 @@ from tqdm import tqdm
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def bar(
         x: Number, total: Number, 
-        width: int = 20, border="|", block="▉", color='white'
+        width: int = 20, border: str = "|", block: str = "▉", color: str = 'white'
 ) -> str:
     """create a string representing a progress bar set at 100 * x / total % full.
 
@@ -56,13 +56,13 @@ def redirect_to_tqdm():
         yield
     finally:
         inspect.builtins.print = old_print
-def progress_bar(iterator, **kwargs):
+def progress_bar(iterator: Iterable, **kwargs):
     """tqdm with print redirected to tqdm.write
     """
     with redirect_to_tqdm():
         for x in tqdm(iterator, **kwargs):
             yield x
-def verbose_bar(iterator, verbose, **kwargs):
+def verbose_bar(iterator: Iterable, verbose: bool, **kwargs):
     """just a progress bar if verbose is true.
     """
     return progress_bar(iterator, **kwargs) if verbose else iterator

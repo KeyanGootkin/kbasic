@@ -1,9 +1,10 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from kbasic.typing import Number, Iterable
 from typing import Callable
-from numpy import ndarray, argmin, any, abs, where, nanmean, nanmin, nanmax, sqrt,\
-                  linspace, nanstd, array, isnan, arange, mgrid, r_, c_, zeros
+from numpy import ndarray, argmin, any, all, abs, where, nanmean, nanmin, nanmax, \
+    sqrt, linspace, nanstd, array, isnan, isfinite, arange, mgrid, r_, c_, zeros
 from scipy.interpolate import RegularGridInterpolator
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -15,13 +16,42 @@ from scipy.interpolate import RegularGridInterpolator
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def tile(arr: ndarray) -> ndarray:
-    """take an image and create a 3x3 grid of that image"""
-    return r_[c_[arr, arr, arr], c_[arr, arr, arr], c_[arr, arr, arr]]
-def where_closest(arr:ndarray, x): return int(argmin(abs(arr-x)))
-def where_between(arr:ndarray, low, high): return where((arr>=low)&(arr<=high))
+def tile(arr: Iterable) -> ndarray:
+    """take an array and create a 3x3 grid of copies of that array
+    
+    Args:
+        arr (Iterable): the 2D array you want a tiled version
+
+    Returns:
+        ndarray: a 3x3 grid of coppies of arr
+    """
+    x = array(arr)
+    return r_[c_[x, x, x], c_[x, x, x], c_[x, x, x]]
+def where_closest(arr:ndarray, value: Number): 
+    """find the index where arr is closest to the value of x
+
+    Args:
+        arr (ndarray): the array to search for the index in
+        value (Number): the value you want to get close to
+
+    Returns:
+        _type_: _description_
+    """
+    return int(argmin(abs(arr-value)))
+def where_between(arr:ndarray, low: Number, high: Number): 
+    """Find the range of indicies where arr is between low and high
+
+    Args:
+        arr (ndarray): the array to search through
+        low (Number): the lower edge of the range (inclusive)
+        high (Number): the upper edge of the range (inclusive)
+
+    Returns:
+        ndarray: an array which is True at indices where low<=arr<=high, and False elsewhere
+    """
+    return where((arr>=low)&(arr<=high))
 def bin_this(
-        x, y, 
+        x: Iterable, y: Iterable, 
         n_bins: int = 50, 
         func: Callable = nanmean
 ) -> tuple[ndarray]:
@@ -50,9 +80,16 @@ def bin_this(
     return x_binned, y_binned, bin_errors
 def nan_clip(*args):
     """
-    take a series of arrays and only return the indicies where ALL members are finite
+    take a series of arrays and only return the indicies where ALL members are not nan
     """
     mask = ~any([isnan(a) for a in args], axis=0)
+    nanless_args = tuple([array(a)[mask] for a in args])
+    return nanless_args
+def only_finite(*args):
+    """
+    take a series of arrays and only return the indicies where ALL members are finite
+    """
+    mask = all([isfinite(a) for a in args], axis=0)
     nanless_args = tuple([array(a)[mask] for a in args])
     return nanless_args
 def interpolate2d(
@@ -80,10 +117,3 @@ def interpolate2d(
     data_repeat[-1,-1] = data[-1,-1]
     new_grid = mgrid[:Nx:1/factor, :Ny:1/factor].T
     return RegularGridInterpolator(grid, data_repeat, method=method)(new_grid).T
-
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Decorators                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Classes                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

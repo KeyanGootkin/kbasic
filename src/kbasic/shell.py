@@ -5,6 +5,7 @@ from kbasic.bar import redirect_to_tqdm
 from kbasic.audio import success
 from kbasic.environment import isAnvil 
 if isAnvil: from kbasic.environment.anvil import anvil_user
+from typing import Any
 from subprocess import check_output, DEVNULL
 from tqdm import tqdm
 from time import sleep
@@ -17,22 +18,38 @@ import numpy as np
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-bad = ['\x1b[31m', '\x1b[34m', '\x1b[m']
-_USERNAME_ = "x-kgootkin" if not isAnvil else anvil_user
+bad: list[str] = ['\x1b[31m', '\x1b[34m', '\x1b[m']
+_USERNAME_: str = "x-kgootkin" if not isAnvil else anvil_user
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def parse_shell_output(output):
-        match output:
-            case str(): return output 
-            case [x]: return x
-            case [x, *_]: 
-                for i in range(len(output)):
-                    for b in bad:
-                        if b in output[i]:
-                            output[i] = output[i].strip(b)
-                return output
-def system(cmd: str):
+def parse_shell_output(output: str | list[str]) -> str | list[str]:
+    """take the output of a shell command and make it nice
+
+    Args:
+        output (str | list[str]): the output of a shell command
+
+    Returns:
+        str | list[str]: a cleaned version of output
+    """
+    match output:
+        case str(): return output 
+        case [x]: return x
+        case [x, *_]: 
+            for i in range(len(output)):
+                for b in bad:
+                    if b in output[i]:
+                        output[i] = output[i].strip(b)
+            return output
+def system(cmd: str) -> str | list[str]:
+    """a version of os.system that actually can return the output
+
+    Args:
+        cmd (str): the command to give the terminal
+
+    Returns:
+        str | list[str]: the output of the command (cleaned of color tags)
+    """
     command = cmd.split(' ') if type(cmd)==str else cmd
     for i in range(len(command)-1):
         if command[i].startswith('"'): 
@@ -43,11 +60,24 @@ def system(cmd: str):
             for j in range(start_quote+1, end_quote+1): del command[j]
     output = parse_shell_output(check_output(command, stderr=DEVNULL).decode().splitlines())
     return output
-def anvil(cmd: str, username=_USERNAME_):
+def anvil(cmd: str, username=_USERNAME_) -> str | list[str]:
+    """Send a shell command to anvil and parse the output
+
+    Args:
+        cmd (str): the command to send to anvil
+        username (str, optional): your anvil username. tries to parse your anvil username by default.
+
+    Returns:
+        str | list[str]: the output of the command (cleaned of color tags)
+    """
     output = parse_shell_output(check_output(['ssh', f'{username}@anvil.rcac.purdue.edu', *cmd.split(' ')], stderr=DEVNULL).decode().splitlines())
     return output
-async def anvil_async(cmd: str): asyncio.to_thread(anvil, cmd)
-def anvil_queue(username=_USERNAME_): return anvil(f"squeue -u {username}")
+async def anvil_async(cmd: str): 
+    """Just an asynchronous version of the anvil command"""
+    asyncio.to_thread(anvil, cmd)
+def anvil_queue(username=_USERNAME_):
+    """Send a squeue command to anvil to check on your runs""" 
+    return anvil(f"squeue -u {username}")
 qs = anvil_queue
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -57,7 +87,7 @@ qs = anvil_queue
 # >-|===|>                             Classes                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!== 
 class AnvilJob:
-    def __init__(self, queue_row: str, sep="DISTINCTSEPERATOR"):
+    def __init__(self, queue_row: str, sep="DISTINCTSEPERATOR") -> None:
         self.sep = sep
         [
             jobid, username, account, name, nodes, cpus, time_limit, status, time
@@ -72,7 +102,7 @@ class AnvilJob:
         self.status = str(status)
         self.time = str(time)
 
-    def __repr__(self): return "-"*30 + f"\n{self.name}: {self.status}\n\t{self.time}/{self.time_limit}"
+    def __repr__(self) -> str: return "-"*30 + f"\n{self.name}: {self.status}\n\t{self.time}/{self.time_limit}"
 
     # def update(self, input=True, iter=True):
     #     match input, iter:
@@ -85,11 +115,13 @@ class AnvilJob:
     #             self.input = dHybridRinput(anvil(f"cat /anvil/scratch/{self.username}/sims/{self.name}/input/input"))
     #         case False, True:
     #             self.iter = int(anvil(f"ls /anvil/scratch/{self.username}/sims/{self.name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
-def get_anvil_jobs(username=_USERNAME_):
+def get_anvil_jobs(username=_USERNAME_) -> list[AnvilJob]:
+    """Parse the squeue and return AnvilJob objects"""
     q = anvil(f"squeue -u {username}")
     if type(q)==str: return []
     return [AnvilJob(x) for x in q[1:]]
 async def get_anvil_jobs_async(username=_USERNAME_):
+    """Just an asynchronous version of get_anvil_jobs"""
     q = await asyncio.to_thread(anvil, f"squeue -u {username}")
     if type(q)==str: return []
     return [AnvilJob(x) for x in q[1:]]
