@@ -1,6 +1,7 @@
 from kbasic.environment import *
 from kbasic.audio import *
 from kbasic.array import *
+from kbasic.strings import *
 from kbasic.bar import *
 from kbasic.shell import *
 from kbasic.user_input import *
