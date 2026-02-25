@@ -3,8 +3,10 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.typing import Number, Iterable
 from typing import Callable
-from numpy import ndarray, argmin, any, all, abs, where, nanmean, nanmin, nanmax, \
-    sqrt, linspace, nanstd, array, isnan, isfinite, arange, mgrid, r_, c_, zeros
+from numpy import ndarray, argmin, any, all, absolute, hypot, logspace, log10, \
+                  where, nanmean, nanmin, nanmax, sqrt, linspace, nanstd, array, \
+                  isnan, isfinite, arange, mgrid, r_, c_, zeros
+from numpy.fft import fftshift, fft2
 from scipy.interpolate import RegularGridInterpolator
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -37,7 +39,7 @@ def where_closest(arr:ndarray, value: Number):
     Returns:
         _type_: _description_
     """
-    return int(argmin(abs(arr-value)))
+    return int(argmin(absolute(arr-value)))
 def where_between(arr:ndarray, low: Number, high: Number): 
     """Find the range of indicies where arr is between low and high
 
@@ -117,3 +119,33 @@ def interpolate2d(
     data_repeat[-1,-1] = data[-1,-1]
     new_grid = mgrid[:Nx:1/factor, :Ny:1/factor].T
     return RegularGridInterpolator(grid, data_repeat, method=method)(new_grid).T
+
+def kspec(image: ndarray) -> ndarray:
+    """take 2d fft and center k=0 at the center point"""
+    return absolute(fftshift(fft2(image) / (1. * image.shape[0] * image.shape[1])))**2
+
+def kspec1d(image: ndarray, bins: int = 100, return_bin_edges: bool = False) -> tuple[ndarray, ndarray, ndarray]:
+    """Take a 2d image and turn it into a 1d fft
+
+    Args:
+        image (ndarray): the array to take the FFT of 
+        bins (int, optional): number of k bins. Defaults to 100.
+        return_bin_edges (bool, optional): if true return the bin edges, not just the k values. Defaults to False.
+
+    Returns:
+        tuple[ndarray, ndarray, ndarray]: 
+    """
+    k = kspec(image)
+    Ny, Nx = image.shape
+    kmag = hypot(*mgrid[
+                     -Ny // 2: Ny // 2,
+                     -Nx // 2: Nx // 2
+                     ][::-1])
+    kmin = nanmin(kmag[kmag != 0])
+    kmax = nanmax(kmag)
+    kgrid = r_[[0], logspace(log10(3*kmin), log10(kmax), bins)]
+    kx = array([nanmean([kgrid[i], kgrid[i+1]]) for i in range(len(kgrid)-1)])
+    ks = array([nanmean(k[where((kgrid[i] < kmag) & (kmag < kgrid[i+1]))]) for i in range(len(kgrid)-1)])
+    kerr = array([nanstd(in_bin:=k[where((kgrid[i] < kmag) & (kmag < kgrid[i+1]))])/sqrt(len(in_bin)) for i in range(len(kgrid)-1)])
+    if not return_bin_edges: return kx, ks, kerr
+    return kgrid, kx, ks, kerr

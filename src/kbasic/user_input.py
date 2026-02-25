@@ -1,15 +1,20 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                              Types                              <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                           Definitions                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from kbasic.typing import Number
+from typing import Any
+
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def parse_user_input(response: str, sep: str = ',') -> Any:
+    match response:
+        case str(x) if x.isnumeric(): 
+            return Number.apply(response)
+        case str(x) if ',' in x: 
+            return tuple(parse_user_input(xi.strip(), sep=sep) for xi in response.split(sep))
+        case _: 
+            return response.lower().strip()
 def yesno(prompt: str):
     """
     prompt the user to either reply yes or no
@@ -33,10 +38,6 @@ def yesno(prompt: str):
                 raise ValueError("need a response with either y or n in it.")
 
         return retry_yesno()
-
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Decorators                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Classes                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def interactive_set_attribute(obj: Any, attr: str, default_answer: str = "") -> None:
+    res: Any = parse_user_input(input(f"Set a value for {repr(obj)}.{attr}:\n\t"))
+    setattr(obj, attr, res)
