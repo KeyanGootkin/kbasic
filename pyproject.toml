@@ -1,6 +1,6 @@
 [project]
 name = "kbasic"
-version = "0.1.17"
+version = "0.1.18"
 description = "Keyan's basic utility functions."
 readme = "README.md"
 authors = [

@@ -5,9 +5,10 @@ from kbasic.typing import Number, Iterable
 from typing import Callable
 from numpy import ndarray, argmin, any, all, absolute, hypot, logspace, log10, \
                   where, nanmean, nanmin, nanmax, sqrt, linspace, nanstd, array, \
-                  isnan, isfinite, arange, mgrid, r_, c_, zeros
-from numpy.fft import fftshift, fft2
+                  isnan, isfinite, arange, mgrid, r_, c_, zeros, delete
+from numpy.fft import fftshift, fft2, fftn
 from scipy.interpolate import RegularGridInterpolator
+from tqdm import tqdm
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<
@@ -149,3 +150,31 @@ def kspec1d(image: ndarray, bins: int = 100, return_bin_edges: bool = False) -> 
     kerr = array([nanstd(in_bin:=k[where((kgrid[i] < kmag) & (kmag < kgrid[i+1]))])/sqrt(len(in_bin)) for i in range(len(kgrid)-1)])
     if not return_bin_edges: return kx, ks, kerr
     return kgrid, kx, ks, kerr
+
+def kspec3d(cube, parallel_axis=0):
+    # Set up parallel axis
+    n_par = cube.shape[parallel_axis]
+    parallel = arange(-(n_par//2), n_par//2+1)
+    # Set up perpendicular axis
+    n_perp = delete(cube.shape, parallel_axis)
+    perp_mag = hypot(*mgrid[
+        -n_perp[1]//2:n_perp[1]//2,
+        -n_perp[0]//2:n_perp[0]//2
+    ][::-1])
+    perp_min = nanmin(perp_mag[perp_mag>0])
+    perp_max = nanmax(perp_mag)
+    perp_grid = arange(0, perp_max, perp_min)
+    n_perp = len(perp_grid)
+    perp = perp_grid + perp_min/2
+    # Take Fourier transform
+    F = array(absolute(fftshift(fftn(cube))/(cube.shape[0]*cube.shape[1]*cube.shape[2])))
+    k = array([
+            [
+                sum(
+                    F[j][where(
+                        (perp_mag >= perp_grid[i]) & (perp_mag < perp_grid[i+1]),
+                    )]
+            ) for i in range(n_perp-1)
+        ] for j in tqdm(range(n_par), position=1, total=n_par)
+    ])
+    return parallel[n_par//2:], perp, k.T[:, n_par//2:]

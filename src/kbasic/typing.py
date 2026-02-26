@@ -20,6 +20,9 @@ class Number:
         float, float16, float32, float64, longdouble, 
         complex, complex64, complex128, clongdouble
     ]
-    
-    def __new__(cls):
-        return cls
+    def __new__(cls, x):
+        match x:
+            case x if type(x) in Number.types: return x
+            case str() if x.isnumeric(): return int(x)
+            case str() if '.' in x and all([xi.isnumeric() for xi in x.split('.')]): return float(x)
+            case _: raise ValueError(f"Cannot parse argument: {x}\nof type: {type(x)}")
