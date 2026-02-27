@@ -5,7 +5,8 @@ pip install kbasic
 ```
 ## Modules
 
-### <span style="color:#f26419">kbasic</span>.<span style="color:#F8BD4F">module</span>.<span style="color:#a8ce98">submodule</span>.<span style="color:#57dee0">function</span>(*args, **kwds)
+### $\rm{{\color{#f26419}kbasic}.{\color{#F8BD4F}module}.{\color{#a8ce98}submodule}.{\color{#57dee0}function}}$(*args, **kwds)
+
 
 ### <span style="color:#f26419">kbasic</span>.<span style="color:#F8BD4F">audio</span>
 a module for playing sounds
