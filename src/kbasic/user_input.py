@@ -8,9 +8,9 @@ from typing import Any
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def parse_user_input(response: str, sep: str = ',') -> Any:
+    try: return Number(response)
+    except ValueError: i=0
     match response:
-        case str(x) if x.isnumeric(): 
-            return Number.apply(response)
         case str(x) if ',' in x: 
             return tuple(parse_user_input(xi.strip(), sep=sep) for xi in response.split(sep))
         case _: 

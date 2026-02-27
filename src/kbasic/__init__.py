@@ -8,3 +8,4 @@ from kbasic.user_input import *
 from kbasic.Tex import *
 from kbasic.typing import *
 from kbasic.vectors import *
+from kbasic.parsing import *
