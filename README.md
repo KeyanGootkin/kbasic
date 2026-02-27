@@ -27,6 +27,4 @@ a module for manipulating numpy arrays
 <span style="color:#f26419">kbasic</span>.<span style="color:#F8BD4F">array</span>.<span style="color:#57dee0">function</span>(*args, **kwds)
 
 
-$\rm{\
-{\color{#f26419}kbasic}.{\color{#F8BD4F}module}.{\color{#a8ce98}submodule}.{\color{#57dee0}function}
-}$
+$\rm{{\color{#f26419}kbasic}.{\color{#F8BD4F}module}.{\color{#a8ce98}submodule}.{\color{#57dee0}function}}$
