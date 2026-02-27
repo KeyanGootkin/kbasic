@@ -27,6 +27,7 @@ a module for manipulating numpy arrays
 <span style="color:#f26419">kbasic</span>.<span style="color:#F8BD4F">array</span>.<span style="color:#57dee0">function</span>(*args, **kwds)
 
 
-$$ \fontfamily{Garamond}\selectfont
+$$\usepackage[T1]{fontenc} 
+\fontfamily{Garamond}\selectfont
 \rm{{\color{#f26419}Color \space your \space \color{#F8BD4F}.md \space file \space \color{#57dee0}in \space Github}}
 $$
