@@ -101,9 +101,13 @@ class File:
 class TOML(File):
     def __init__(self, path: str, verbose: bool = False):
         File.__init__(self, path, verbose=verbose)
+        self.loaded: bool = False
         if self.exists: self.read()
     def read(self):
-        self.__dict__ |= tomllib.load(open(self.path, 'rb'))
+        self.loaded = True
+        self._attrs = tomllib.load(open(self.path, 'rb'))
+        self.__dict__ |= self._attrs 
+        self.lines = [f"{k}={v}" for k,v in self._attrs.items()]
 class Folder:
     def __init__(self, path:str, master=None) -> None:
         self.path = '/' if path=='' else abspath(path.replace("\\", "/").replace('//', '/'))
