@@ -8,8 +8,11 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from numpy import ndarray, int8, uint8, int16, uint16, int32, uint32, int64, uint64, float16, float32, float64, longdouble, complex64, complex128, clongdouble
-from collections.abc import Callable, Iterable
+from numpy import int8, uint8, int16, uint16, int32, uint32, int64, uint64, \
+                  float16, float32, float64, longdouble, complex64, complex128, \
+                  clongdouble
+from numpy.typing import NDArray, ArrayLike
+from collections.abc import Callable
 from typing import Any
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<
@@ -24,5 +27,6 @@ class Number:
         match x:
             case x if type(x) in Number.types: return x
             case str() if x.isnumeric(): return int(x)
-            case str() if '.' in x and all([xi.isnumeric() for xi in x.split('.')]): return float(x)
+            case str() if '.' in x and all([xi.isnumeric() for xi in x.split('.')]): 
+                return float(x)
             case _: raise ValueError(f"Cannot parse argument: {x}\nof type: {type(x)}")
