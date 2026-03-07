@@ -4,7 +4,7 @@
 from numpy import array, cos, sin, sqrt, exp
 from typing import Self
 from collections.abc import Generator
-from kbasic.typing import Number, Iterable
+from kbasic.typing import Number, ArrayLike
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
@@ -24,7 +24,7 @@ def hamilton_product(q1, q2):
 def organize_components(components) -> tuple[float|int]:
     match components:
         case (x, *_) if type(x) in Number.types: return components
-        case (x,) if type(x) in Iterable.types: return tuple(x) 
+        case (x,) if type(x) in ArrayLike.types: return tuple(x) 
         case (Generator(),): return tuple(components[0])
         case (Vector(),): return components[0].components
         case _: raise TypeError(f"{components} cannot be matched")
@@ -55,11 +55,11 @@ class Vector:
         match other:
             case Vector(): return type(self)(xs+xo for xs, xo in zip(self.components, other.components))
             case x if type(x) in Number.types: return type(self)(x+other for x in self.components)
-            case x if type(x) in Iterable.types: return type(self)(xs+xo for xs, xo in zip(self.components, other))
+            case x if type(x) in ArrayLike.types: return type(self)(xs+xo for xs, xo in zip(self.components, other))
     def __sub__(self, other) -> Self:
         match other:
             case x if type(x) in Number.types: return type(self)(x-other for x in self.components)
-            case x if type(x) in Iterable.types: return type(self)(xs-xo for xs, xo in zip(self.components, other))
+            case x if type(x) in ArrayLike.types: return type(self)(xs-xo for xs, xo in zip(self.components, other))
             case Vector(): return type(self)(xs-xo for xs, xo in zip(self.components, other.components))
     def __mul__(self, other) -> Self|Number:
         match other:

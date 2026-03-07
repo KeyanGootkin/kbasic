@@ -4,7 +4,7 @@
 #pysim imports
 from kbasic.user_input import yesno
 #nonpysim imports
-import numpy as np
+from numpy import ndarray
 from glob import glob 
 from shutil import copy, move, copytree, rmtree
 from os.path import isdir, isfile, exists, abspath
@@ -170,6 +170,6 @@ def parse(path: str | list[str]) -> Folder | File | list[Folder | File]:
             if isdir(path): return Folder(path)
             if isfile(path): 
                 return TOML(path) if path.split('.')[-1]=='toml' else File(path)
-        case list()|np.ndarray():
+        case list() | ndarray():
             return [Folder(p) if isdir(p) else File(p) if isfile(p) else None for p in path]
     raise FileNotFoundError(f"Unable to parse path(s): {path}")

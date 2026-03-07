@@ -3,7 +3,7 @@
     to see if something looks like a number (int, float, complex or numpy variants)
     i would say ->
     if type(x) in Number.types: do_something()
-    elif type(x) in Iterable.types: do_something_else()
+    elif type(x) in ArrayLike.types: do_something_else()
 """
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
@@ -12,11 +12,12 @@ from numpy import int8, uint8, int16, uint16, int32, uint32, int64, uint64, \
                   float16, float32, float64, longdouble, complex64, complex128, \
                   clongdouble
 from numpy.typing import NDArray, ArrayLike
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from typing import Any
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+ArrayLike.types = [NDArray, list, set, tuple, Generator]
 class Number:
     types: list = [
         int, int8, uint8, int16, uint16, int32, uint32, int64, uint64, 

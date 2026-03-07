@@ -1,63 +1,60 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number, Iterable
+from kbasic.typing import Number, ArrayLike, NDArray
 from typing import Callable
-from numpy import ndarray, argmin, any, all, absolute, hypot, logspace, log10, \
-                  where, nanmean, nanmin, nanmax, sqrt, linspace, nanstd, array, \
-                  isnan, isfinite, arange, mgrid, r_, c_, zeros, delete
+from numpy import argmin, any, all, absolute, hypot, logspace, log10, where, \
+                  nanmean, nanmin, nanmax, sqrt, linspace, nanstd, array, isnan, \
+                  isfinite, arange, mgrid, r_, c_, zeros, delete, unravel_index
 from numpy.fft import fftshift, fft2, fftn
 from scipy.interpolate import RegularGridInterpolator
 from tqdm import tqdm
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                              Types                              <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                           Definitions                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def tile(arr: Iterable) -> ndarray:
+def tile(arr: ArrayLike) -> NDArray:
     """take an array and create a 3x3 grid of copies of that array
     
     Args:
-        arr (Iterable): the 2D array you want a tiled version
+        arr (ArrayLike): the 2D array you want a tiled version
 
     Returns:
-        ndarray: a 3x3 grid of coppies of arr
+        NDArray: a 3x3 grid of coppies of arr
     """
     x = array(arr)
     return r_[c_[x, x, x], c_[x, x, x], c_[x, x, x]]
-def where_closest(arr:ndarray, value: Number): 
+def where_closest(arr:ArrayLike, value: Number) -> int | tuple[int]: 
     """find the index where arr is closest to the value of x
 
     Args:
-        arr (ndarray): the array to search for the index in
+        arr (ArrayLike): the array to search for the index in
         value (Number): the value you want to get close to
 
     Returns:
         _type_: _description_
     """
-    return int(argmin(absolute(arr-value)))
-def where_between(arr:ndarray, low: Number, high: Number): 
+    arr = array(arr)
+    indices = unravel_index(argmin(absolute(arr-value)))
+    return indices if len(indices)>1 else indices[0]
+def where_between(arr:ArrayLike, low: Number, high: Number) -> NDArray: 
     """Find the range of indicies where arr is between low and high
 
     Args:
-        arr (ndarray): the array to search through
+        arr (ArrayLike): the array to search through
         low (Number): the lower edge of the range (inclusive)
         high (Number): the upper edge of the range (inclusive)
 
     Returns:
-        ndarray: an array which is True at indices where low<=arr<=high, and False elsewhere
+        NDArray: an array which is True at indices where low<=arr<=high, and False elsewhere
     """
+    arr = array(arr)
     return where((arr>=low)&(arr<=high))
 def bin_this(
-        x: Iterable, y: Iterable, 
+        x: ArrayLike, y: ArrayLike, 
         n_bins: int = 50, 
         func: Callable = nanmean
-) -> tuple[ndarray]:
+) -> tuple[NDArray]:
     """a function to rebin x, y data and calculate errors.
 
     Args:
@@ -67,10 +64,11 @@ def bin_this(
         func (Callable, optional): the function to call on the members of each bin. Defaults to numpy.nanmean.
 
     Returns:
-        x_binned (ndarray): the bins.
-        y_binned (ndarray): func(members of each bin).
-        bin_errors (ndarray): standard error of the mean for each bin
+        x_binned (NDArray): the bins.
+        y_binned (NDArray): func(members of each bin).
+        bin_errors (NDArray): standard error of the mean for each bin
     """
+    x, y = array(x), array(y)
     xbins = linspace(nanmin(x),nanmax(x),n_bins)
     Y,error = list(),list()
     for i,low_edge in enumerate(xbins[:-1]):
@@ -81,14 +79,14 @@ def bin_this(
         error.append(nanstd(yin)/sqrt(len(yin)))
     x_binned, y_binned, bin_errors = array(xbins)[:-1],array(Y),array(error)
     return x_binned, y_binned, bin_errors
-def nan_clip(*args):
+def nan_clip(*args: tuple[ArrayLike]) -> tuple[ArrayLike]:
     """
     take a series of arrays and only return the indicies where ALL members are not nan
     """
     mask = ~any([isnan(a) for a in args], axis=0)
     nanless_args = tuple([array(a)[mask] for a in args])
     return nanless_args
-def only_finite(*args):
+def only_finite(*args: tuple[ArrayLike]) -> tuple[ArrayLike]:
     """
     take a series of arrays and only return the indicies where ALL members are finite
     """
@@ -96,19 +94,19 @@ def only_finite(*args):
     nanless_args = tuple([array(a)[mask] for a in args])
     return nanless_args
 def interpolate2d(
-        data, factor: int, 
+        data: ArrayLike, factor: int, 
         method: str = 'linear',
         periodic: bool = True
-) -> ndarray:
+) -> NDArray:
     """interpolate 2d data on a regular grid by an even factor
 
     Args:
-        data (ndarray[ndarray]): 2d data on a regular grid
+        data (ArrayLike): 2d data on a regular grid
         factor (int): how many new grid points per old grid points
         method (str, optional): the interpolation method. Defaults to 'linear'.
 
     Returns:
-        ndarray[ndarray]: an interpolated grid of data
+        NDArray: an interpolated grid of data
     """
     assert periodic, "non-periodic version not implemented yet! make one but be careful because the shapes will be awkward"
     Nx, Ny = array(data).shape
@@ -120,21 +118,23 @@ def interpolate2d(
     data_repeat[-1,-1] = data[-1,-1]
     new_grid = mgrid[:Nx:1/factor, :Ny:1/factor].T
     return RegularGridInterpolator(grid, data_repeat, method=method)(new_grid).T
-
-def kspec(image: ndarray) -> ndarray:
+def kspec(image: ArrayLike) -> NDArray:
     """take 2d fft and center k=0 at the center point"""
     return absolute(fftshift(fft2(image) / (1. * image.shape[0] * image.shape[1])))**2
-
-def kspec1d(image: ndarray, bins: int = 100, return_bin_edges: bool = False) -> tuple[ndarray, ndarray, ndarray]:
+def kspec1d(
+        image: ArrayLike, 
+        bins: int = 100, 
+        return_bin_edges: bool = False
+        ) -> tuple[NDArray, NDArray, NDArray]:
     """Take a 2d image and turn it into a 1d fft
 
     Args:
-        image (ndarray): the array to take the FFT of 
+        image (ArrayLike): the array to take the FFT of 
         bins (int, optional): number of k bins. Defaults to 100.
         return_bin_edges (bool, optional): if true return the bin edges, not just the k values. Defaults to False.
 
     Returns:
-        tuple[ndarray, ndarray, ndarray]: 
+        tuple[NDArray, NDArray, NDArray]: 
     """
     k = kspec(image)
     Ny, Nx = image.shape
@@ -150,8 +150,10 @@ def kspec1d(image: ndarray, bins: int = 100, return_bin_edges: bool = False) -> 
     kerr = array([nanstd(in_bin:=k[where((kgrid[i] < kmag) & (kmag < kgrid[i+1]))])/sqrt(len(in_bin)) for i in range(len(kgrid)-1)])
     if not return_bin_edges: return kx, ks, kerr
     return kgrid, kx, ks, kerr
-
-def kspec3d(cube, parallel_axis=0):
+def kspec3d(
+        cube: ArrayLike, 
+        parallel_axis: int = 0
+        ) -> tuple[NDArray]:
     # Set up parallel axis
     n_par = cube.shape[parallel_axis]
     parallel = arange(-(n_par//2), n_par//2+1)

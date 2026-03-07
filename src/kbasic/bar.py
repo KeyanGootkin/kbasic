@@ -1,8 +1,9 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number, Iterable
+from kbasic.typing import Number
 from kbasic.strings import green, yellow, black
+from collections.abc import Iterable
 from contextlib import contextmanager
 import inspect
 from tqdm import tqdm

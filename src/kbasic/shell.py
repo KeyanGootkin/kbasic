@@ -10,7 +10,6 @@ from subprocess import check_output, DEVNULL
 from tqdm import tqdm
 from time import sleep
 import asyncio
-import numpy as np
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<
@@ -125,7 +124,7 @@ async def get_anvil_jobs_async(username=_USERNAME_):
     q = await asyncio.to_thread(anvil, f"squeue -u {username}")
     if type(q)==str: return []
     return [AnvilJob(x) for x in q[1:]]
-async def get_anvil_sim_iter(name: str):
+async def get_anvil_sim_iter(name: str, username=_USERNAME_):
     iter = int(await asyncio.to_thread(anvil, f"ls /anvil/scratch/{username}/sims/{name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
     return iter
 class AnvilQueue:
