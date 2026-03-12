@@ -4,29 +4,42 @@
 #pysim imports
 from kbasic.user_input import yesno
 #nonpysim imports
+from typing import Self
 from numpy import ndarray
 from glob import glob 
 from shutil import copy, move, copytree, rmtree
-from os.path import isdir, isfile, exists, abspath
+from os.path import isdir, isfile, exists, abspath, expanduser, expandvars, \
+                    normpath, splitroot, split, splitext
 from os import system, remove
 import tomllib
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-unreadable_file_types: list[str] = ['gz', 'tar', 'zip']
+unreadable_file_types: list[str] = ['.gz', '.tar', '.zip']
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def ensure_path(path: str) -> None:
-    """make sure that a path exists
+def clean_path(path: str) -> str:
+    """return an absolute, normalzed, cleaned path with expanded environment 
+    variables and user characters
 
     Args:
-        path (str): the path you want to exist
+        path (str): input path sting
+
+    Returns:
+        str: a path
+    """
+    return normpath(expanduser(exandvars(path)))
+def ensure_path(path: str) -> Non:
+    """make sure that a path exiss
+
+    Args:
+        path (str): the path you ant to exist
     """
     system(f"mkdir -p {path}")
-def could_be_path(path: str) -> bool: 
+def could_be_path(path: str) -> bol: 
     """determine if this is anywhere close to a valid path
 
     Args:
@@ -41,25 +54,25 @@ def could_be_path(path: str) -> bool:
 # >-|===|>                             Classes                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class File:
-    def __init__(self, path:str, master=None, executable:bool=False, verbose:bool=False) -> None:
+    def __init__(self, path:str, master=None, verbose:bool=False) -> None:
         """A convenience class to deal with file io
 
         Args:
             path (str): the location of the file.
-            master (str, optional): the path to the template to restore this file from if necessary. Defaults to None.
-            executable (bool, optional): is this file an executable. Defaults to False.
-            verbose (bool, optional): should this file be annoying. Defaults to False.
+            master (str, optional): the path to the template to restore this file 
+                                    from if necessary. Defaults to None.
+            verbose (bool, optional): should this file be annoying. Defaults to 
+                                        False.
         """
-        self.path: str = abspath(path.replace("\\", "/").replace('//', '/'))
-        pathlist: list[str] = self.path.split("/")
-        self.parent = Folder("/".join(pathlist[:-1]))
-        self.grandparent = Folder("/".join(pathlist[:-2])) if len(pathlist)>3 else None
-        self.greatgrandparent = Folder("/".join(pathlist[:-3])) if len(pathlist)>4 else None
-        self.name = self.path.split("/")[-1]
-        self.extension = self.name.split(".")[-1] if "." in self.name else None
+        self.path: str = clean_path(path)
         self.master = master if not isinstance(master, str) else File(master)
-        self.executable = executable
         self.verbose = verbose
+        parentpath, self.name = split(self.path)
+        self.title, self.extension = splitext(self.name)
+        self.drive, self.root, tail = splitroot(self.path)
+        self.parent = Folder(parentpath)
+        self.grandparent = self.parent.parent
+        self.greatgrandparent = self.parent.parent.parent
     def __repr__(self) -> str: return self.path
     def __str__(self) -> str: return "\n".join(self.lines)
     def __add__(self, other):
@@ -78,7 +91,7 @@ class File:
     def copy(self, destination:str): copy(self.path, destination)
     def move(self, destination:str): 
         move(self.path, destination)
-        self = File.__init__(destination, master=self.master, executable=self.executable)
+        self = File.__init__(destination, master=self.master)
     def update(self) -> None:
         if self.verbose: print(f'updating {self.name}...')
         assert self.master is not None, "No master copy to update from."
@@ -110,9 +123,9 @@ class TOML(File):
         self.lines = [f"{k}={v}" for k,v in self._attrs.items()]
 class Folder:
     def __init__(self, path:str, master=None) -> None:
-        self.path = '/' if path=='' else abspath(path.replace("\\", "/").replace('//', '/'))
-        self.name = self.path.split("/")[-1] if len(self.path.split('/')[-1])>0 else self.path.split("/")[-2]
+        self.path = clean_path(path)
         self.master = master if not isinstance(master, str) else Folder(master)
+        self.parentpath, self.name = split(self.path)
     def __repr__(self) -> str: return self.path
     def __len__(self) -> int: return len(self.children)
     def __iter__(self):
@@ -137,6 +150,9 @@ class Folder:
         if other==0: return [self]
         return self.__add__(other)
     @property
+    def parent(self) -> Self:
+        return Folder(self.parentpath)
+    @property
     def exists(self) -> bool: return exists(self.path)
     @property
     def children(self) -> list: return glob(self.path+"/*" if self.path!='/' else "/*")
@@ -153,6 +169,9 @@ class Folder:
             return None
         rmtree(self.path)
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def parse(path: str | list[str]) -> Folder | File | list[Folder | File]:
     """take a path or list of paths and turn them into Folder or File objects as appropriate.
 

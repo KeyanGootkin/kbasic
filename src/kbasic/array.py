@@ -35,7 +35,7 @@ def where_closest(arr:ArrayLike, value: Number) -> int | tuple[int]:
         _type_: _description_
     """
     arr = array(arr)
-    indices = unravel_index(argmin(absolute(arr-value)))
+    indices = unravel_index(argmin(absolute(arr-value)), arr.shape)
     return indices if len(indices)>1 else indices[0]
 def where_between(arr:ArrayLike, low: Number, high: Number) -> NDArray: 
     """Find the range of indicies where arr is between low and high
