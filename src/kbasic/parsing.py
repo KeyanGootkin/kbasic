@@ -3,8 +3,11 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 #pysim imports
 from kbasic.user_input import yesno
+from kbasic.typing import Array, Number
 #nonpysim imports
-from typing import Self
+from time import time
+from datetime import datetime
+from typing import Self, Optional, Callable
 from numpy import ndarray
 from glob import glob 
 from shutil import copy, move, copytree, rmtree
@@ -31,15 +34,15 @@ def clean_path(path: str) -> str:
     Returns:
         str: a path
     """
-    return normpath(expanduser(exandvars(path)))
-def ensure_path(path: str) -> Non:
+    return normpath(expanduser(expandvars(path)))
+def ensure_path(path: str) -> None:
     """make sure that a path exiss
 
     Args:
         path (str): the path you ant to exist
     """
     system(f"mkdir -p {path}")
-def could_be_path(path: str) -> bol: 
+def could_be_path(path: str) -> bool: 
     """determine if this is anywhere close to a valid path
 
     Args:
@@ -49,12 +52,15 @@ def could_be_path(path: str) -> bol:
         bool: True if the first two members of the path are valid else False.
     """
     return isdir('/'.join(path.split('/')[:2])) 
-
+def default_log_formater(msg: str) -> str:
+    return f"{str(datetime.now())}: {msg}"
+def delta_log_formater(msg: str, start_time: Number) -> str:
+    return f"Δt: {(time()-start_time)*1e6:.1f} μs | {msg}"
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class File:
-    def __init__(self, path:str, master=None, verbose:bool=False) -> None:
+    def __init__(self, path: str|Self, master=None, verbose:bool=False) -> None:
         """A convenience class to deal with file io
 
         Args:
@@ -64,6 +70,10 @@ class File:
             verbose (bool, optional): should this file be annoying. Defaults to 
                                         False.
         """
+        if path is None: return None
+        elif type(path)==type(self): 
+            self = path
+            return None
         self.path: str = clean_path(path)
         self.master = master if not isinstance(master, str) else File(master)
         self.verbose = verbose
@@ -111,6 +121,17 @@ class File:
         with open(self.path, 'w+') as file:
             if not file.writable: raise PermissionError(f"attempted to save unwritable file: {self.path}")
             file.writelines("\n".join(self.lines))
+class Log(File):
+    def __init__(self, path: str | Self, verbose: bool = False, fmt: Callable[str] = default_log_formater):
+        File.__init__(self, path, verbose=verbose)
+        self.fmt = fmt
+    def __call__(self, msg: Array[str]|str, *args, **kwds):
+        match msg:
+            case str(): output = [self.fmt(msg, *args, **kwds)]
+            case _ if type(msg) in Array.types: output = [self.fmt(m, *args, **kwds) for m in msg]
+        if self.verbose: print(output)
+        self.lines += output 
+        self.save(interactive=False)
 class TOML(File):
     def __init__(self, path: str, verbose: bool = False):
         File.__init__(self, path, verbose=verbose)
@@ -122,7 +143,10 @@ class TOML(File):
         self.__dict__ |= self._attrs 
         self.lines = [f"{k}={v}" for k,v in self._attrs.items()]
 class Folder:
-    def __init__(self, path:str, master=None) -> None:
+    def __init__(self, path: str|Self, master: Optional[Self]=None) -> None:
+        if type(path)==type(self): 
+            self.__init__(path.path)
+            return None
         self.path = clean_path(path)
         self.master = master if not isinstance(master, str) else Folder(master)
         self.parentpath, self.name = split(self.path)
