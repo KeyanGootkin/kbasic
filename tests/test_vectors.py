@@ -1,4 +1,4 @@
-import pytest 
+import pytest
 from kbasic.vectors import R2, Norm
 
 def test_vector():

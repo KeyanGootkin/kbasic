@@ -54,7 +54,7 @@ def bin_this(
         x: ArrayLike, y: ArrayLike, 
         n_bins: int = 50, 
         func: Callable = nanmean
-) -> tuple[NDArray]:
+    ) -> tuple[NDArray]:
     """a function to rebin x, y data and calculate errors.
 
     Args:

@@ -1,10 +1,10 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from numpy import array, cos, sin, sqrt, exp
 from typing import Self
 from collections.abc import Generator
-from kbasic.typing import Number, ArrayLike
+from numpy import array, cos, sin, sqrt, exp
+from kbasic.typing import Number, Array
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
@@ -13,7 +13,7 @@ from kbasic.typing import Number, ArrayLike
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def hamilton_product(q1, q2):
-    a1, b1, c1, d1 = q1 
+    a1, b1, c1, d1 = q1
     a2, b2, c2, d2 = q2
     return array([
         a1*a2 - b1*b2 - c1*c2 - d1*d2,
@@ -24,7 +24,7 @@ def hamilton_product(q1, q2):
 def organize_components(components) -> tuple[float|int]:
     match components:
         case (x, *_) if type(x) in Number.types: return components
-        case (x,) if type(x) in ArrayLike.types: return tuple(x) 
+        case (x,) if type(x) in Array.types: return tuple(x)
         case (Generator(),): return tuple(components[0])
         case (Vector(),): return components[0].components
         case _: raise TypeError(f"{components} cannot be matched")
@@ -36,11 +36,11 @@ class Vector:
     def __init__(self, *components) -> None:
         self.components = organize_components(components)
         self.ndims = self.dim = self.dimensions = len(components) #i always forget which one i choose :)
-    def __repr__(self) -> str: 
+    def __repr__(self) -> str:
         return str(self.components)
-    def __len__(self) -> int: 
+    def __len__(self) -> int:
         return self.dimensions
-    def __abs__(self) -> Number: 
+    def __abs__(self) -> Number:
         return sqrt(sum(array(self.components)**2))
     def __iter__(self) -> Self:
         self._index = 0
@@ -50,16 +50,16 @@ class Vector:
             value = self.components[self._index]
             self._index += 1
             return value
-        except IndexError: raise StopIteration
+        except IndexError as err: raise StopIteration from err
     def __add__(self, other) -> Self:
         match other:
             case Vector(): return type(self)(xs+xo for xs, xo in zip(self.components, other.components))
             case x if type(x) in Number.types: return type(self)(x+other for x in self.components)
-            case x if type(x) in ArrayLike.types: return type(self)(xs+xo for xs, xo in zip(self.components, other))
+            case x if type(x) in Array.types: return type(self)(xs+xo for xs, xo in zip(self.components, other))
     def __sub__(self, other) -> Self:
         match other:
             case x if type(x) in Number.types: return type(self)(x-other for x in self.components)
-            case x if type(x) in ArrayLike.types: return type(self)(xs-xo for xs, xo in zip(self.components, other))
+            case x if type(x) in Array.types: return type(self)(xs-xo for xs, xo in zip(self.components, other))
             case Vector(): return type(self)(xs-xo for xs, xo in zip(self.components, other.components))
     def __mul__(self, other) -> Self|Number:
         match other:
@@ -113,7 +113,7 @@ class R2(Vector):
     def rotate(self, angle):
         r = self.x + 1j*self.y 
         r_rotated = r * exp(1j*angle)    
-        self.__init__(r_rotated.real, r_rotated.imag)    
+        self = R2(r_rotated.real, r_rotated.imag)    
 class R3(Vector):
     def __init__(self, *components):
         self.components: tuple[Number] = organize_components(components)
@@ -132,11 +132,14 @@ class R3(Vector):
         rotation = array(Norm([cos(angle/2), *(axis*sin(angle/2))]).components)
         rotation_inverse = array([rotation[0], *-rotation[1:]])
         rotated_vector = hamilton_product(hamilton_product(rotation, qs), rotation_inverse)[1:]
-        self.__init__(*rotated_vector)
+        self = R3(*rotated_vector)
 class Matrix:
-    def __init__(self, array):
-        self.array = array 
+    def __init__(self, arr):
+        self.array = arr
     def __mul__(self, other):
         match other:
             case Vector():
-                res = [[self.array[i,j]*other.components[i] for i in range(len(other))] for j in range(len(other))]
+                res = [
+                    [self.array[i,j]*other.components[i] for i in range(len(other))] 
+                for j in range(len(other))]
+                return res

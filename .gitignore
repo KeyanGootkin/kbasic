@@ -6,6 +6,7 @@ dist/
 wheels/
 *.egg-info
 .coverage
+coverage.md
 py.typed
 .DS_Store
 
