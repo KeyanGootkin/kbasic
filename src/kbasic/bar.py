@@ -1,26 +1,21 @@
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Imports                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number
-from kbasic.strings import green, yellow, black
+"""progress bar code"""
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                    Imports                                     <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from collections.abc import Iterable
 from contextlib import contextmanager
 import inspect
+from kbasic.typing import Number
+from kbasic.strings import green, yellow, black
 from tqdm import tqdm
 
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                              Types                              <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                           Definitions                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Functions                            <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-def bar(
-        x: Number, total: Number, 
-        width: int = 20, border: str = "|", block: str = "▉", color: str = 'white'
-) -> str:
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                   Functions                                    <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def bar_string(
+        x: Number, total: Number,
+        width: int = 20, border: str = "|", block: str = "▉", color: bool = True
+    ) -> str:
     """create a string representing a progress bar set at 100 * x / total % full.
 
     Args:
@@ -35,8 +30,9 @@ def bar(
     """
     full = int((x/total) * width // 1)
     empty = width - full
-    bar = border + (full-1)*green(block) + yellow(block) + empty*black(block, "faint") + border 
-    return bar
+    if color: output = (full-1)*green(block) + yellow(block) + empty*black(block, "faint")
+    else: output = (full-1)*block + empty*" "
+    return border + output + border
 @contextmanager
 def redirect_to_tqdm():
     """maybe make print statements show up below the bar without fucking everything up?
@@ -48,7 +44,7 @@ def redirect_to_tqdm():
         # If tqdm.tqdm.write raises error, use builtin print
         try:
             tqdm.write(*args, **kwargs)
-        except:
+        except Exception:
             old_print(*args, ** kwargs)
 
     try:
@@ -61,23 +57,19 @@ def progress_bar(iterator: Iterable, **kwargs):
     """tqdm with print redirected to tqdm.write
     """
     with redirect_to_tqdm():
-        for x in tqdm(iterator, **kwargs):
-            yield x
+        yield from tqdm(iterator, **kwargs)
 def verbose_bar(iterator: Iterable, verbose: bool, **kwargs):
     """just a progress bar if verbose is true.
     """
     return progress_bar(iterator, **kwargs) if verbose else iterator
 
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Decorators                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Classes                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                    Classes                                     <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class ProgressBar(tqdm):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
         self.iter = self.initial
-    def update(self, iter: int): 
+    def update(self, iter: int):
         super().update(n=iter-self.iter)
         self.iter = iter

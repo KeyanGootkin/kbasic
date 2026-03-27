@@ -10,7 +10,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from numpy import int8, uint8, int16, uint16, int32, uint32, int64, uint64, \
                   float16, float32, float64, longdouble, complex64, complex128, \
-                  clongdouble
+                  clongdouble, ndarray
 from numpy.typing import NDArray, ArrayLike
 from collections.abc import Callable, Generator
 from typing import Any
@@ -18,7 +18,7 @@ from typing import Any
 # >-|===|>                              Types                              <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class Array:
-    types: list = [NDArray, list, set, tuple, Generator]
+    types: list = [NDArray, ndarray, list, set, tuple, Generator]
 class Number:
     types: list = [
         int, int8, uint8, int16, uint16, int32, uint32, int64, uint64, 

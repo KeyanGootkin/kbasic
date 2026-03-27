@@ -1,8 +1,9 @@
+"""pure array operations"""
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number, ArrayLike, NDArray
 from typing import Callable
+from kbasic.typing import Number, ArrayLike, NDArray
 from numpy import argmin, any, all, absolute, hypot, logspace, log10, where, \
                   nanmean, nanmin, nanmax, sqrt, linspace, nanstd, array, isnan, \
                   isfinite, arange, mgrid, r_, c_, zeros, delete, unravel_index
@@ -97,7 +98,7 @@ def interpolate2d(
         data: ArrayLike, factor: int, 
         method: str = 'linear',
         periodic: bool = True
-) -> NDArray:
+    ) -> NDArray:
     """interpolate 2d data on a regular grid by an even factor
 
     Args:
@@ -125,7 +126,7 @@ def kspec1d(
         image: ArrayLike, 
         bins: int = 100, 
         return_bin_edges: bool = False
-        ) -> tuple[NDArray, NDArray, NDArray]:
+    ) -> tuple[NDArray, NDArray, NDArray]:
     """Take a 2d image and turn it into a 1d fft
 
     Args:
@@ -151,9 +152,10 @@ def kspec1d(
     if not return_bin_edges: return kx, ks, kerr
     return kgrid, kx, ks, kerr
 def kspec3d(
-        cube: ArrayLike, 
+        cube: ArrayLike,
         parallel_axis: int = 0
-        ) -> tuple[NDArray]:
+    ) -> tuple[NDArray]:
+    """docstring"""
     # Set up parallel axis
     n_par = cube.shape[parallel_axis]
     parallel = arange(-(n_par//2), n_par//2+1)

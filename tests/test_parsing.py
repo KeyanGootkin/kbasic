@@ -1,4 +1,5 @@
 """test the parsing part of kbasic"""
+# pylint: skip-file
 import os
 import os.path
 import pathlib

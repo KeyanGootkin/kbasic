@@ -1,27 +1,25 @@
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Imports                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.bar import redirect_to_tqdm
-from kbasic.audio import success
-from kbasic.environment import isAnvil 
-if isAnvil: from kbasic.environment.anvil import anvil_user
-from typing import Any
+"""utilities for interacting with shell"""
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                    Imports                                     <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from subprocess import check_output, DEVNULL
-from tqdm import tqdm
 from time import sleep
 import asyncio
+from tqdm import tqdm
+from kbasic.bar import redirect_to_tqdm
+from kbasic.audio import success
+from kbasic.environment import isAnvil
+if isAnvil: from kbasic.environment.anvil import anvil_user
 
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                              Types                              <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                           Definitions                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                  Definitions                                   <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 bad: list[str] = ['\x1b[31m', '\x1b[34m', '\x1b[m']
 _USERNAME_: str = "x-kgootkin" if not isAnvil else anvil_user
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Functions                            <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                   Functions                                    <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def parse_shell_output(output: str | list[str]) -> str | list[str]:
     """take the output of a shell command and make it nice
 
@@ -79,12 +77,9 @@ def anvil_queue(username=_USERNAME_):
     return anvil(f"squeue -u {username}")
 qs = anvil_queue
 
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Decorators                           <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Classes                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!== 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                    Classes                                     <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 class AnvilJob:
     def __init__(self, queue_row: str, sep="DISTINCTSEPERATOR") -> None:
         self.sep = sep
@@ -125,7 +120,11 @@ async def get_anvil_jobs_async(username=_USERNAME_):
     if type(q)==str: return []
     return [AnvilJob(x) for x in q[1:]]
 async def get_anvil_sim_iter(name: str, username=_USERNAME_):
-    iter = int(await asyncio.to_thread(anvil, f"ls /anvil/scratch/{username}/sims/{name}/Output/Fields/Magnetic/Total/x/")[-1][5:-3])
+    """docstring"""
+    iter = int(await asyncio.to_thread(
+        anvil,
+        f"ls /anvil/scratch/{username}/sims/{name}/Output/Fields/Magnetic/Total/x/"
+    )[-1][5:-3])
     return iter
 class AnvilQueue:
     def __init__(self, username=_USERNAME_):
