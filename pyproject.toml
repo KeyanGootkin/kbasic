@@ -1,6 +1,6 @@
 [project]
 name = "kbasic"
-version = "0.1.39"
+version = "0.2.3"
 description = "Keyan's basic utility functions."
 readme = "README.md"
 authors = [
@@ -26,4 +26,4 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-v --maxfail=1 --cov=kbasic"
+addopts = "-v --maxfail=1 --cov=kbasic --import-mode=importlib"

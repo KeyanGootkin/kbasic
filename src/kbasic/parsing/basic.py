@@ -2,14 +2,16 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from os import remove
-from os.path import split, splitext, splitroot, exists, isdir, isfile, abspath
+from os import remove, system, walk
+from os.path import split, splitext, splitroot, exists, isdir, isfile, abspath, \
+    expanduser, expandvars, basename
 from shutil import copy, move, copytree, rmtree
 from typing import Self, Optional
 from glob import glob
 from pathlib import Path as builtinPath
 from kbasic.parsing.utils import ensure_path
 from kbasic.user_input import yesno
+from kbasic.strings import cyan
 from kbasic.typing import Array
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
@@ -34,24 +36,27 @@ class File:
             verbose (bool, optional): should this file be annoying. Defaults to 
                                         False.
         """
+        self.loaded: bool = False
         if path is None: return None
         if type(path)==type(self):
-            self = path
-            return None
-        self.path: str = abspath(str(builtinPath(path).resolve()))
+            self.path = path.path
+        else:
+            self.path: str = abspath(expandvars(expanduser(path)))
         self.master = File(master)
         self.verbose = verbose
-        self.loaded: bool = False
         parentpath, self.name = split(self.path)
         self.title, self.extension = splitext(self.name)
         self.drive, self.root, _ = splitroot(self.path)
         self.parent = Folder(parentpath)
         self.lines = []
-    def __repr__(self) -> str: 
+    def __repr__(self) -> str:
         return self.path
     def __str__(self) -> str:
         if not self.loaded: self.read()
         return "\n".join(self.lines)
+    def __eq__(self, other) -> bool:
+        if type(other) != File: return False
+        return (self.path == other.path) & (self.lines == other.lines)
     def __add__(self, other):
         match other:
             case list():
@@ -85,19 +90,20 @@ class File:
         """
         if destination is None: destination = str(self.parent / f"{self.title}-copy{self.extension}")
         copy(self.path, destination)
-        return File(destination)
+        return File(destination, verbose=self.verbose, master=self)
     def move(self, destination:str):
         """_summary_
 
         Args:
             destination (str): _description_
         """
+        if self.verbose: print(cyan(f'moving {self.path} to {destination}...'))
         move(self.path, destination)
         self.__init__(destination, master=self.master)
     def update(self) -> None: # think of a better name for this function
         """_summary_
         """
-        if self.verbose: print(f'updating {self.name}...')
+        if self.verbose: print(cyan(f'updating {self.name}...'))
         assert self.master is not None, "No master copy to update from."
         if self.exists: self.delete(interactive=False)
         self.master.copy(self.path)
@@ -114,6 +120,7 @@ class File:
         if not self.exists or self.extension in unreadable_file_types: return []
         with open(self.path, 'r') as file:
             self.lines = [f.strip('\n') for f in file.readlines()]
+            if self.lines==['']: self.lines = []
         self.loaded = True
     def load(self) -> None:
         """docstring"""
@@ -125,24 +132,28 @@ class File:
             ):
             return None
         with open(self.path, 'w+') as file:
-            if not file.writable:
+            if not self.writable:
                 raise PermissionError(
                     f"attempted to save unwritable file: {self.path}"
                     )
-            file.writelines("\n".join(self.lines))
+            if len(self.lines) > 0: file.writelines("\n".join(self.lines))
+            return None
     def write(self, text: str | Array, interactive=False) -> None:
         """add text to this File.lines then save the file"""
         match text:
-            case str(): 
+            case str():
                 self.lines.append(text)
-            case _ if type(text) in Array.types: 
+            case _ if type(text) in Array.types:
                 self.lines += list(text)
-            case _: 
-                raise TypeError(f"must supply either string or an array of strings\nwas given text of type: {type(text)}")
+            case _:
+                raise TypeError(f"""
+                    must supply either string or an array of strings
+                    was given text of type: {type(text)}
+                """)
         self.save(interactive=interactive)
     def touch(self) -> None:
         """summary"""
-        self.write('')
+        system(f"touch {self.path}")
 
 class Folder:
     def __init__(
@@ -152,10 +163,17 @@ class Folder:
         if path is None: return None
         if type(path)==type(self):
             path = path.path
-        self.path = abspath(str(builtinPath(path).resolve()))
+        self.path = abspath(expandvars(expanduser(path)))
         self.master = master if not isinstance(master, str) else Folder(master)
         self.parentpath, self.name = split(self.path)
     def __repr__(self) -> str: return self.path
+    def __str__(self) -> str:
+        output = []
+        for root, dirs, files in walk(self.path):
+            level = root.replace(self.path, '').count('/')
+            output.append(f'{'----'*level}{basename(root)}')
+            for f in files: output.append(f'|{'----'*(level+1)}> {f}')
+        return '\n'.join(output)
     def __len__(self) -> int: return len(self.children)
     def __iter__(self):
         self.index = 0
@@ -164,16 +182,18 @@ class Folder:
         if self.index < len(self):
             i = self.index
             self.index += 1
-            return Folder(self.children[i]) if isdir(self.children[i]) else File(self.children[i])
+            return self.children[i]
         raise StopIteration
     def __add__(self, other):
         match other:
             case str():
-                p = f"{self.path}/{other}"
-                return Path(p)
-            case File(): return self.children+[other]
-            case Folder(): return self.children + other.children
-            case list(): return self.children + other
+                return Path(f"{self.path}/{other}")
+            case File():
+                return self.children+[other]
+            case Folder():
+                return self.children + other.children
+            case list():
+                return self.children + other
             case _:
                 raise NotImplementedError(
                     f"can't add object of type: {type(other)} to a Folder object: {repr(self)}"
@@ -187,27 +207,29 @@ class Folder:
     @property
     def parent(self) -> Self:
         """summary"""
-        return Folder(self.parentpath)
+        return Folder(self.parentpath) if len(self.parentpath) > 3 else None
     @property
     def exists(self) -> bool:
         """summary"""
         return exists(self.path)
-    def glob(self, pattern: str):
+    def glob(self, pattern: str, recursive=True):
         """summary"""
-        return glob(self.path+pattern)
+        return glob(self.path+'/'+pattern, recursive=recursive)
     @property
     def children(self) -> list:
         """summary"""
-        return self.glob("/*")
+        return [Path(p) for p in self.glob("*")]
     def ls(self) -> None:
         """summary"""
-        print("\n".join(self.children))
+        print("\n".join([p.path for p in self.children]))
     def make(self) -> None:
         """summary"""
         ensure_path(self.path)
     def copy(self, destination:str) -> None:
         """summary"""
+        if destination is None: destination = str(self.parent / f"{self.name}-copy")
         copytree(self.path, destination)
+        return File(destination, verbose=self.verbose, master=self)
     def revert(self) -> None:
         """summary"""
         assert self.master is not None, "No master copy to update from."

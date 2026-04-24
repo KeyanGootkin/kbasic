@@ -58,12 +58,12 @@ class VectorBase:
             case int():
                 return Vector(c[item] for c in self.components)
             case (int(), *_):
-                return [Vector(c[i] for c in self.components) for i in item]
+                return Vector([c[i] for i in item] for c in self.components)
             case slice():
                 start = item.start if item.start else 0
                 stop = item.stop if item.stop else len(self)
                 step = item.step if item.step else 1
-                return [Vector(c[i] for c in self.components) for i in range(start, stop, step)]
+                return Vector([c[i] for i in range(start, stop, step)] for c in self.components)
     def __iter__(self) -> Self:
         self._index = 0
         return self

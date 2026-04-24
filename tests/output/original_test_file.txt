@@ -1,2 +1,0 @@
-test line
-second line from new file object

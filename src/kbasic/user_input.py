@@ -1,19 +1,34 @@
+"""handle user inputs"""
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                                    Imports                                     <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number
 from typing import Any
+from contextlib import contextmanager
+from tempfile import TemporaryFile
+import sys
+from kbasic.typing import Number
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                                   Functions                                    <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+@contextmanager
+def simulate_user_input(*user_input: tuple[str]):
+    """change stdin to simulate the user entering a string"""
+    with TemporaryFile(mode='a+') as answers:
+        answers.write("\n".join(user_input))
+        answers.seek(0)
+        orig = sys.stdin
+        sys.stdin = answers
+        yield
+        sys.stdin = orig
 def parse_user_input(response: str, sep: str = ',') -> Any:
+    """turn user supplied strings into appropriate python objects"""
     try: return Number(response)
-    except ValueError: i=0
+    except ValueError: _ = None
     match response:
-        case str(x) if ',' in x: 
+        case str(x) if ',' in x:
             return tuple(parse_user_input(xi.strip(), sep=sep) for xi in response.split(sep))
-        case _: 
+        case _:
             return response.lower().strip()
 def yesno(prompt: str):
     """
@@ -38,6 +53,7 @@ def yesno(prompt: str):
                 raise ValueError("need a response with either y or n in it.")
 
         return retry_yesno()
-def interactive_set_attribute(obj: Any, attr: str, default_answer: str = "") -> None:
+def interactive_set_attribute(obj: Any, attr: str) -> None:
+    """prompt the user to set an objects attribute"""
     res: Any = parse_user_input(input(f"Set a value for {repr(obj)}.{attr}:\n\t"))
     setattr(obj, attr, res)
