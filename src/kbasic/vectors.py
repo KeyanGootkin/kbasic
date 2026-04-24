@@ -28,9 +28,9 @@ def hamilton_product(q1, q2):
 class VectorBase:
     def __init__(self, *components) -> None:
         match components[0]:
-            case x if type(x) in Number.types:
+            case Number():
                 self.components = components
-            case x if type(x) in Array.types:
+            case Array():
                 self.components = tuple(array(x) for x in components)
             case Generator():
                 self.components = tuple(components[0])
@@ -77,15 +77,15 @@ class VectorBase:
         match other:
             case VectorBase():
                 return Vector(xs+xo for xs, xo in zip(self.components, other.components))
-            case x if type(x) in Number.types:
+            case Number():
                 return Vector(xi+other for xi in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return Vector(xs+xo for xs, xo in zip(self.components, other))
     def __sub__(self, other) -> Self:
         match other:
-            case x if type(x) in Number.types:
+            case Number():
                 return type(self)(x-other for x in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return type(self)(xs-xo for xs, xo in zip(self.components, other))
             case VectorBase():
                 return type(self)(xs-xo for xs, xo in zip(self.components, other.components))
@@ -93,23 +93,23 @@ class VectorBase:
         match other:
             case VectorBase():
                 return sum(list(c1*c2 for c1,c2 in zip(self, other)), axis=0)
-            case x if type(x) in Number.types:
+            case Number():
                 return type(self)(c*other for c in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return type(self)(c1*c2 for c1, c2 in zip(self, other))
     def __truediv__(self, other) -> Self:
         match other:
             case VectorBase():
                 return Vector(c1 / c2 for c1, c2 in zip(self, other))
-            case x if type(x) in Number.types:
+            case Number():
                 return type(self)(c / other for c in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return type(self)(c1 / c2 for c1, c2 in zip(self, other))
     def __floordiv__(self, other) -> Self:
         match other:
-            case x if type(x) in Number.types:
+            case Number():
                 return type(self)(c//other for c in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return type(self)(c1//c2 for c1, c2 in zip(self, other))
     def __radd__(self, other) -> Self:
         match other:
@@ -125,15 +125,15 @@ class VectorBase:
             case _: return self.__mul__(other)
     def __rtruediv__(self, other) -> Self:
         match other:
-            case x if type(x) in Number.types:
+            case Number():
                 return type(self)(other/c for c in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return type(self)(c2/c1 for c1, c2 in zip(self, other))
     def __rfloordiv__(self, other) -> Self:
         match other:
-            case x if type(x) in Number.types:
+            case Number():
                 return type(self)(other//c for c in self)
-            case x if type(x) in Array.types:
+            case Array():
                 return type(self)(c2//c1 for c1, c2 in zip(self, other))
 class Vector(VectorBase):
     def __new__(cls, *components) -> Self: # the vector factory
@@ -145,7 +145,7 @@ class Vector(VectorBase):
             case (Generator(),):
                 return Vector(tuple(components[0]))
             # single array
-            case (x,) if type(x) in Array.types:
+            case (Array(),):
                 return Vector(*x)
             # 2D
             case (x, y):

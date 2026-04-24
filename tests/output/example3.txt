@@ -1,0 +1,2 @@
+hi
+written in example.txt

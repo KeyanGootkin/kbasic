@@ -1,0 +1,4 @@
+/Users/keyan/code/packages/kbasic/tests/output/example4.txt
+/Users/keyan/code/packages/kbasic/tests/output/example3.txt
+/Users/keyan/code/packages/kbasic/tests/output/example.txt
+/Users/keyan/code/packages/kbasic/tests/output/ls_output.txt
