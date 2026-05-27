@@ -3,11 +3,12 @@
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from typing import Callable
-from kbasic.typing import Number, ArrayLike, NDArray
+from kbasic.typing import Number
 from numpy import argmin, any, all, absolute, hypot, logspace, log10, where, \
                   nanmean, nanmin, nanmax, sqrt, linspace, nanstd, array, isnan, \
                   isfinite, arange, mgrid, r_, c_, zeros, delete, unravel_index
 from numpy.fft import fftshift, fft2, fftn
+from numpy.typing import ArrayLike, NDArray
 from scipy.interpolate import RegularGridInterpolator
 from tqdm import tqdm
 

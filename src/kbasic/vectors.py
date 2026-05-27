@@ -1,10 +1,12 @@
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# =>> KBASIC.VECTOR <<=
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 """Implement vector classes for vector analysis"""
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                                    Imports                                     <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from typing import Self
 from collections.abc import Generator
-from functools import total_ordering
 from numpy import array, cos, sin, sqrt, exp, sum
 from kbasic.typing import Number, Array
 
@@ -135,6 +137,8 @@ class VectorBase:
                 return type(self)(other//c for c in self)
             case Array():
                 return type(self)(c2//c1 for c1, c2 in zip(self, other))
+
+
 class Vector(VectorBase):
     def __new__(cls, *components) -> Self: # the vector factory
         match components:
@@ -146,7 +150,7 @@ class Vector(VectorBase):
                 return Vector(tuple(components[0]))
             # single array
             case (Array(),):
-                return Vector(*x)
+                return Vector(*components[0])
             # 2D
             case (x, y):
                 return R2(x, y)
@@ -161,11 +165,15 @@ class Vector(VectorBase):
                 return VectorBase(*components)
             case x:
                 raise TypeError(f"given components:\n{components}\nof type: {type(x)}")
+
+
 class Norm(VectorBase):
     def __init__(self, *components):
         self.components = components
         gen = (x/abs(self) for x in self)
         super().__init__(gen)
+
+
 class Quaternion(Norm):
     def __init__(self, angle, axis):
         q0 = cos(angle/2)
@@ -173,6 +181,8 @@ class Quaternion(Norm):
         self.axis *= sin(angle/2)
         self.axis *= sqrt(1-q0**2)/abs(self.axis)
         super().__init__(q0, *self.axis.components)
+
+
 class R2(VectorBase):
     def __init__(self, *components):
         super().__init__(*components)
@@ -185,6 +195,8 @@ class R2(VectorBase):
         r_rotated = r * exp(1j*angle)
         self.__init__(r_rotated.real, r_rotated.imag)
         return self
+
+
 class R3(VectorBase):
     def __init__(self, *components):
         super().__init__(*components)

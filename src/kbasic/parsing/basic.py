@@ -1,10 +1,13 @@
-"""the bulk of kbasics path logic lives here."""
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Imports                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from os import remove, system, walk
-from os.path import split, splitext, splitroot, exists, isdir, isfile, abspath, \
-    expanduser, expandvars, basename
+"""
+the bulk of kbasics path logic lives here. File and Folder will both work for anything that accepts
+an os.PathLike argument, such as the builtin open function.
+"""
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                    Imports                                     <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from os import remove, system
+from os.path import split, splitext, splitroot, exists, isdir, isfile, abspath, expanduser,\
+    expandvars
 from shutil import copy, move, copytree, rmtree
 from typing import Self, Optional
 from glob import glob
@@ -49,11 +52,8 @@ class File:
         self.drive, self.root, _ = splitroot(self.path)
         self.parent = Folder(parentpath)
         self.lines = []
-    def __repr__(self) -> str:
-        return self.path
-    def __str__(self) -> str:
-        if not self.loaded: self.read()
-        return "\n".join(self.lines)
+    def __repr__(self) -> str: return self.path
+    def __str__(self) -> str: return self.path
     def __eq__(self, other) -> bool:
         if type(other) != File: return False
         return (self.path == other.path) & (self.lines == other.lines)
@@ -70,6 +70,7 @@ class File:
     def __radd__(self, other):
         if other==0: return self
         return self.__add__(other)
+    def __fspath__(self) -> str: return self.path
     @property
     def exists(self) -> bool:
         """_summary_
@@ -88,7 +89,8 @@ class File:
         Args:
             destination (str): _description_
         """
-        if destination is None: destination = str(self.parent / f"{self.title}-copy{self.extension}")
+        if destination is None:
+            destination = str(self.parent / f"{self.title}-copy{self.extension}")
         copy(self.path, destination)
         return File(destination, verbose=self.verbose, master=self)
     def move(self, destination:str):
@@ -167,13 +169,7 @@ class Folder:
         self.master = master if not isinstance(master, str) else Folder(master)
         self.parentpath, self.name = split(self.path)
     def __repr__(self) -> str: return self.path
-    def __str__(self) -> str:
-        output = []
-        for root, dirs, files in walk(self.path):
-            level = root.replace(self.path, '').count('/')
-            output.append(f'{'----'*level}{basename(root)}')
-            for f in files: output.append(f'|{'----'*(level+1)}> {f}')
-        return '\n'.join(output)
+    def __str__(self) -> str: return self.path
     def __len__(self) -> int: return len(self.children)
     def __iter__(self):
         self.index = 0
@@ -204,6 +200,7 @@ class Folder:
     def __truediv__(self, other):
         match other:
             case str(): return Path(f"{self.path}/{other}")
+    def __fspath__(self) -> str: return self.path
     @property
     def parent(self) -> Self:
         """summary"""
